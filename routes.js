@@ -16,13 +16,13 @@ const nameValidator = check('name')
 // Route that creates a new user.
 router.post('/users', [
     check('name')
-      .exists()
+      .exists({ checkNull: true, checkFalsy: true })
       .withMessage('Please provide a value for "name"'),
     check('username')
-      .exists()
+      .exists({ checkNull: true, checkFalsy: true })
       .withMessage('Please provide a value for "username"'),
     check('password')
-      .exists()
+      .exists({ checkNull: true, checkFalsy: true })
       .withMessage('Please provide a value for "password"'),
   ], (req, res) => {
   // Attempt to get the validation result from the Request object.
