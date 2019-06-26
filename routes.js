@@ -16,6 +16,8 @@ const nameValidator = check('name')
   .withMessage('Please provide a value for "name"');
 
 const authenticateUser = (req, res, next) => {
+    let message = null;
+
     // Parse the user's credentials from the Authorization header.
     const credentials = auth(req);
 
@@ -24,7 +26,7 @@ const authenticateUser = (req, res, next) => {
     // Attempt to retrieve the user from the data store
     // by their username (i.e. the user's "key"
     // from the Authorization header).
-    const user = users.find(u => u.username === credentials.name);
+        const user = users.find(u => u.username === credentials.name);
 
 
     // If a user was successfully retrieved from the data store...
@@ -37,24 +39,42 @@ const authenticateUser = (req, res, next) => {
 
     // If the passwords match...
             if(authenticated) {
+                console.log(`Authentication successful for username: ${user.username}`);
     // Then store the retrieved user object on the request object
     // so any middleware functions that follow this middleware function
     // will have access to the user's information.
                 req.currentUser = user;
+            } else {
+                message = `Authentication failure for username: ${user.username}`;
             }
-        }
+        } else {
+            message = `User not found for username: ${credentials.name}`;
+        } 
+    } else {
+        message = 'Auth header not found';
     }
 
     // If user authentication failed...
+    if (message) {
+        console.warn(message);
+    
     // Return a response with a 401 Unauthorized HTTP status code.
-
-    // Or if user authentication succeeded...
+    res.status(401).json({ message: 'Access Denied' });
+    } else {
+            // Or if user authentication succeeded...
     // Call the next() method.
     next();
-}
+    }
+};
 
 router.get('/users', authenticateUser, (req, res) => {
     // Code to get and return the current user...
+    const user = req.currentUser;
+
+    res.json({
+      name: user.name,
+      username: user.username,
+    });
   });
 
 // Route that creates a new user.
